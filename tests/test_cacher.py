@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from src.simple_cache.cacher import Cacher
+from src.simple_cache import Cacher
 
 
 def test_get_cache_path_with_directory():
