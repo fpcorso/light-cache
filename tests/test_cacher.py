@@ -6,6 +6,76 @@ import pytest
 from src.simple_cache import Cacher
 
 
+def test_memory_cache_and_retrieve_item():
+    """Test basic caching and retrieval when using memory-only cache."""
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+    test_data = {"key": "value"}
+
+    # Cache the item
+    cacher.cache_item("test_key", test_data)
+
+    # Retrieve the item
+    retrieved_data = cacher.get_cached_item("test_key")
+
+    assert retrieved_data == test_data
+    # Verify it's stored in memory
+    assert "test_key" in cacher.cache
+    assert cacher.cache["test_key"]["data"] == test_data
+
+
+def test_memory_cache_multiple_items():
+    """Test handling multiple items in the memory cache."""
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+    items = {
+        "key1": {"data": "value1"},
+        "key2": {"data": "value2"},
+        "key3": {"data": "value3"},
+    }
+
+    # Cache multiple items
+    for key, value in items.items():
+        cacher.cache_item(key, value)
+
+    # Verify all items are stored and retrievable
+    for key, value in items.items():
+        retrieved = cacher.get_cached_item(key)
+        assert retrieved == value
+
+
+def test_memory_cache_overwrites():
+    """Test that caching with the same key overwrites the previous value."""
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+
+    # Cache initial data
+    cacher.cache_item("test_key", {"version": 1})
+
+    # Cache new data with the same key
+    cacher.cache_item("test_key", {"version": 2})
+
+    # Verify only new data is present
+    retrieved = cacher.get_cached_item("test_key")
+    assert retrieved == {"version": 2}
+
+
+def test_memory_cache_clear_on_init():
+    """Test that the memory cache starts fresh with each instance."""
+    # First instance
+    cacher1 = Cacher(persist_cache=False, keep_cache_in_memory=True)
+    cacher1.cache_item("test_key", {"data": "value"})
+
+    # Second instance should have empty cache
+    cacher2 = Cacher(persist_cache=False, keep_cache_in_memory=True)
+    assert cacher2.get_cached_item("test_key") is None
+
+
+def test_memory_cache_nonexistent_key():
+    """Test retrieving non-existent key from the memory cache."""
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+
+    retrieved = cacher.get_cached_item("nonexistent")
+    assert retrieved is None
+
+
 def test_is_cache_directory_needed_with_valid_directory():
     cacher = Cacher(persist_cache=False, namespace="test", cache_directory="test_dir")
     assert cacher._is_cache_directory_needed() is True

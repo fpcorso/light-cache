@@ -125,19 +125,19 @@ class Cacher:
         base_namespace = os.path.basename(namespace)
 
         # Only allow alphanumeric chars, underscore, and hyphen
-        sanitized = ''.join(c for c in base_namespace if c.isalnum() or c in '_-')
+        sanitized = "".join(c for c in base_namespace if c.isalnum() or c in "_-")
 
         if not sanitized:
             logger.warning("Empty filename after sanitization.")
-            sanitized = 'general_cache'
+            sanitized = "general_cache"
 
         return sanitized
 
     @staticmethod
     def _sanitize_directory(directory: str) -> str:
         """Sanitize the directory path by resolving to the absolute path and checking traversal."""
-        if not directory or directory == '.':
-            return '.'
+        if not directory or directory == ".":
+            return "."
 
         # Convert to the absolute path and resolve any symlinks
         abs_path = os.path.abspath(directory)
@@ -146,17 +146,19 @@ class Cacher:
         # Ensure the directory is within the current working directory
         cwd = os.path.realpath(os.getcwd())
         if not real_path.startswith(cwd):
-            logger.warning(f"Attempted directory traversal outside CWD. Defaulting to '.cache'")
-            return '.cache'
+            logger.warning(
+                f"Attempted directory traversal outside CWD. Defaulting to '.cache'"
+            )
+            return ".cache"
 
         # Convert back to the relative path from CWD
         try:
             relative_path = os.path.relpath(real_path, cwd)
-            return relative_path if relative_path != '.' else '.cache'
+            return relative_path if relative_path != "." else ".cache"
         except ValueError:
             # Handle any path resolution errors
             logger.warning("Error resolving relative path. Defaulting to '.cache'")
-            return '.cache'
+            return ".cache"
 
     @staticmethod
     def _is_expired(item: dict) -> bool:
