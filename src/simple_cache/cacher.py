@@ -10,6 +10,7 @@ class Cacher:
     def __init__(self, namespace: str = 'general_cache', cache_directory: str = '.cache'):
         self.namespace = namespace
         self.cache_directory = cache_directory
+        self._ensure_cache_directory_exists()
 
     def get_cached_item(self, key: str) -> dict | list | None:
         cache = self.load_cache()
@@ -17,13 +18,14 @@ class Cacher:
         if key not in cache:
             return None
 
-        if self._is_expired(cache[key]):
+        item = cache[key].copy()
+        if self._is_expired(item):
             del cache[key]
             self.save_cache(cache)
             return None
 
         logger.debug(f"Cache hit for key: {key}")
-        return cache[key]['data']
+        return item['data']
 
     def cache_item(self, key: str, item: dict | list, expires_in_hours: int = 24):
         cache = self.load_cache()
@@ -55,12 +57,24 @@ class Cacher:
         return data
 
     def _get_cache_path(self) -> str:
-        if self.cache_directory and self.cache_directory != '.':
+        if self._is_cache_directory_needed():
             filename = os.path.join(self.cache_directory, f"{self.namespace}.pkl")
         else:
             filename = f"{self.namespace}.pkl"
 
         return filename
+
+    def _ensure_cache_directory_exists(self) -> None:
+        if not self._is_cache_directory_needed():
+            return
+
+        try:
+            os.makedirs(self.cache_directory, mode=0o700, exist_ok=True)
+        except OSError as e:
+            logger.error(f"Failed to create cache directory: {e}")
+
+    def _is_cache_directory_needed(self) -> bool:
+        return self.cache_directory and self.cache_directory != '.'
 
     def _is_expired(self, item: dict) -> bool:
         return 'expires' not in item or item['expires'] < datetime.datetime.now()
