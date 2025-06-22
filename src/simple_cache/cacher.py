@@ -10,13 +10,11 @@ logger = logging.getLogger(__name__)
 TODO: Is there a better name for this class and JSONSerializer?
 TODO: Change namespace to "store" or other larger separation to allow for maybe adding namespace inside cache
 TODO: Add helper method for seeing if a cached key exists
-TODO: Maybe rename get_cache_item to just get() or get_item()
 TODO: Change expires to be timestamp seconds and expiration parameter to be in seconds instead of hours
 TODO: remember() helper method?
 TODO: Allow for non-expiring cache?
 TODO: If above, maybe rememberForever() helper method?
 TODO: pull() or similar method that gets() and then deletes() from cache if it existed
-TODO: Should caching item just be put() or add()?
 TODO: Maybe add putMany or addMany for bulk adding?
 TODO: Add method for deleting a cached item
 '''
@@ -45,7 +43,7 @@ class Cacher:
         if self.keep_cache_in_memory:
             self.cache = self.load_cache()
 
-    def get_cached_item(self, key: str, default = None) -> dict | list | None:
+    def get(self, key: str, default = None) -> dict | list | None:
         cache = self.load_cache()
 
         if key not in cache:
@@ -60,7 +58,7 @@ class Cacher:
         logger.debug(f"Cache hit for key: {key}")
         return item["data"]
 
-    def cache_item(self, key: str, item: dict | list, expires_in_hours: int = 24):
+    def put(self, key: str, item: dict | list, expires_in_hours: int = 24):
         cache = self.load_cache()
 
         prepared_item = {

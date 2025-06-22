@@ -26,14 +26,14 @@ def test_file_cache_basic_operations(temp_cache_dir):
     )
 
     test_data = {"key": "value"}
-    cacher.cache_item("test_key", test_data)
+    cacher.put("test_key", test_data)
 
     # Verify file exists
     cache_file = os.path.join(temp_cache_dir, "test_cache.json")
     assert os.path.exists(cache_file)
 
     # Verify data can be retrieved
-    retrieved_data = cacher.get_cached_item("test_key")
+    retrieved_data = cacher.get("test_key")
     assert retrieved_data == test_data
 
 
@@ -46,7 +46,7 @@ def test_file_cache_persistence(temp_cache_dir):
         namespace="test_cache",
         cache_directory=temp_cache_dir
     )
-    cacher1.cache_item("test_key", {"data": "value"})
+    cacher1.put("test_key", {"data": "value"})
 
     # The second instance should be able to read the cached data
     cacher2 = Cacher(
@@ -55,7 +55,7 @@ def test_file_cache_persistence(temp_cache_dir):
         namespace="test_cache",
         cache_directory=temp_cache_dir
     )
-    retrieved = cacher2.get_cached_item("test_key")
+    retrieved = cacher2.get("test_key")
     assert retrieved == {"data": "value"}
 
 
@@ -90,7 +90,7 @@ def test_mixed_mode_operations(temp_cache_dir):
     )
 
     # Cache an item
-    cacher.cache_item("test_key", {"data": "value"})
+    cacher.put("test_key", {"data": "value"})
 
     # Verify it's in memory
     assert "test_key" in cacher.load_cache()
@@ -106,10 +106,10 @@ def test_memory_cache_and_retrieve_item():
     test_data = {"key": "value"}
 
     # Cache the item
-    cacher.cache_item("test_key", test_data)
+    cacher.put("test_key", test_data)
 
     # Retrieve the item
-    retrieved_data = cacher.get_cached_item("test_key")
+    retrieved_data = cacher.get("test_key")
 
     assert retrieved_data == test_data
     # Verify it's stored in memory
@@ -128,11 +128,11 @@ def test_memory_cache_multiple_items():
 
     # Cache multiple items
     for key, value in items.items():
-        cacher.cache_item(key, value)
+        cacher.put(key, value)
 
     # Verify all items are stored and retrievable
     for key, value in items.items():
-        retrieved = cacher.get_cached_item(key)
+        retrieved = cacher.get(key)
         assert retrieved == value
 
 
@@ -141,13 +141,13 @@ def test_memory_cache_overwrites():
     cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
 
     # Cache initial data
-    cacher.cache_item("test_key", {"version": 1})
+    cacher.put("test_key", {"version": 1})
 
     # Cache new data with the same key
-    cacher.cache_item("test_key", {"version": 2})
+    cacher.put("test_key", {"version": 2})
 
     # Verify only new data is present
-    retrieved = cacher.get_cached_item("test_key")
+    retrieved = cacher.get("test_key")
     assert retrieved == {"version": 2}
 
 
@@ -155,18 +155,18 @@ def test_memory_cache_clear_on_init():
     """Test that the memory cache starts fresh with each instance."""
     # First instance
     cacher1 = Cacher(persist_cache=False, keep_cache_in_memory=True)
-    cacher1.cache_item("test_key", {"data": "value"})
+    cacher1.put("test_key", {"data": "value"})
 
     # Second instance should have empty cache
     cacher2 = Cacher(persist_cache=False, keep_cache_in_memory=True)
-    assert cacher2.get_cached_item("test_key") is None
+    assert cacher2.get("test_key") is None
 
 
 def test_memory_cache_nonexistent_key():
     """Test retrieving non-existent key from the memory cache."""
     cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
 
-    retrieved = cacher.get_cached_item("nonexistent")
+    retrieved = cacher.get("nonexistent")
     assert retrieved is None
 
 
