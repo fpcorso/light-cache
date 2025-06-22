@@ -11,6 +11,7 @@ class Cacher:
         self.namespace = namespace
         self.cache_directory = cache_directory
         self._ensure_cache_directory_exists()
+        self.remove_expired_items()
 
     def get_cached_item(self, key: str) -> dict | list | None:
         cache = self.load_cache()
@@ -56,6 +57,15 @@ class Cacher:
 
         return data
 
+    def remove_expired_items(self):
+        cache = self.load_cache()
+
+        expired = [k for k, v in cache.items() if self._is_expired(v)]
+        for key in expired:
+            del cache[key]
+
+        self.save_cache(cache)
+
     def _get_cache_path(self) -> str:
         if self._is_cache_directory_needed():
             filename = os.path.join(self.cache_directory, f"{self.namespace}.pkl")
@@ -76,5 +86,6 @@ class Cacher:
     def _is_cache_directory_needed(self) -> bool:
         return self.cache_directory and self.cache_directory != '.'
 
-    def _is_expired(self, item: dict) -> bool:
+    @staticmethod
+    def _is_expired(item: dict) -> bool:
         return 'expires' not in item or item['expires'] < datetime.datetime.now()
