@@ -55,27 +55,27 @@ def test_is_expired_with_invalid_items(invalid_item):
 def test_get_cache_path_with_directory():
     """Test cache path generation with a directory"""
     cacher = Cacher(persist_cache=False, namespace='test_cache', cache_directory='cache_dir')
-    expected = os.path.join('cache_dir', 'test_cache.pkl')
+    expected = os.path.join('cache_dir', 'test_cache.json')
     assert cacher._get_cache_path() == expected
 
 def test_get_cache_path_without_directory():
     """Test cache path generation with no directory (None)"""
     cacher = Cacher(persist_cache=False, namespace='test_cache', cache_directory=None)
-    assert cacher._get_cache_path() == 'test_cache.pkl'
+    assert cacher._get_cache_path() == 'test_cache.json'
 
 def test_get_cache_path_with_dot_directory():
     """Test cache path generation with the '.' directory"""
     cacher = Cacher(persist_cache=False, namespace='test_cache', cache_directory='.')
-    assert cacher._get_cache_path() == 'test_cache.pkl'
+    assert cacher._get_cache_path() == 'test_cache.json'
 
 def test_get_cache_path_with_empty_directory():
     """Test cache path generation with an empty string directory"""
     cacher = Cacher(persist_cache=False, namespace='test_cache', cache_directory='')
-    assert cacher._get_cache_path() == 'test_cache.pkl'
+    assert cacher._get_cache_path() == 'test_cache.json'
 
 def test_get_cache_path_with_nested_directory():
     """Test cache path generation with a nested directory path"""
     nested_path = os.path.join('path', 'to', 'cache')
     cacher = Cacher(persist_cache=False, namespace='test_cache', cache_directory=nested_path)
-    expected = os.path.join('path', 'to', 'cache', 'test_cache.pkl')
+    expected = os.path.join('path', 'to', 'cache', 'test_cache.json')
     assert cacher._get_cache_path() == expected

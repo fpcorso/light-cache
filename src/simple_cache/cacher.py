@@ -1,7 +1,7 @@
 import datetime
+import json
 import logging
 import os
-import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class Cacher:
             filename = self._get_cache_path()
             try:
                 with open(filename, 'wb') as cache_file:
-                    pickle.dump(data, cache_file)
+                    json.dump(data, cache_file)
             except Exception as e:
                 logger.error(f"Failed to write cache to file: {e}")
 
@@ -70,7 +70,7 @@ class Cacher:
         filename = self._get_cache_path()
         try:
             with open(filename, 'rb') as cache_file:
-                data = pickle.load(cache_file)
+                data = json.load(cache_file)
         except (FileNotFoundError, EOFError):
             data = {}
 
@@ -87,9 +87,9 @@ class Cacher:
 
     def _get_cache_path(self) -> str:
         if self._is_cache_directory_needed():
-            filename = os.path.join(self.cache_directory, f"{self.namespace}.pkl")
+            filename = os.path.join(self.cache_directory, f"{self.namespace}.json")
         else:
-            filename = f"{self.namespace}.pkl"
+            filename = f"{self.namespace}.json"
 
         return filename
 
