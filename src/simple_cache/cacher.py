@@ -13,7 +13,12 @@ class Cacher:
         self.namespace = namespace
         self.cache_directory = cache_directory
         self.cache = {}
-        self._ensure_cache_directory_exists()
+
+        # Make sure the cache directory exists if we need it.
+        if self.persist_cache:
+            self._ensure_cache_directory_exists()
+
+        # Remove all expired items from the existing cache, if any.
         self.remove_expired_items()
 
         # If we are using object-caching, go ahead and load the cache in now to be used.
