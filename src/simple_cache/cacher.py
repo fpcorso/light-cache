@@ -6,7 +6,20 @@ from .JSONSerializer import JSONSerializer
 
 logger = logging.getLogger(__name__)
 
-
+'''
+TODO: Is there a better name for this class and JSONSerializer?
+TODO: Change namespace to "store" or other larger separation to allow for maybe adding namespace inside cache
+TODO: Add helper method for seeing if a cached key exists
+TODO: Maybe rename get_cache_item to just get() or get_item()
+TODO: Change expires to be timestamp seconds and expiration parameter to be in seconds instead of hours
+TODO: remember() helper method?
+TODO: Allow for non-expiring cache?
+TODO: If above, maybe rememberForever() helper method?
+TODO: pull() or similar method that gets() and then deletes() from cache if it existed
+TODO: Should caching item just be put() or add()?
+TODO: Maybe add putMany or addMany for bulk adding?
+TODO: Add method for deleting a cached item
+'''
 class Cacher:
     def __init__(
         self,
@@ -32,17 +45,17 @@ class Cacher:
         if self.keep_cache_in_memory:
             self.cache = self.load_cache()
 
-    def get_cached_item(self, key: str) -> dict | list | None:
+    def get_cached_item(self, key: str, default = None) -> dict | list | None:
         cache = self.load_cache()
 
         if key not in cache:
-            return None
+            return default
 
         item = cache[key].copy()
         if self._is_expired(item):
             del cache[key]
             self.save_cache(cache)
-            return None
+            return default
 
         logger.debug(f"Cache hit for key: {key}")
         return item["data"]
@@ -118,13 +131,11 @@ class Cacher:
     @staticmethod
     def _sanitize_namespace(namespace: str) -> str:
         """Sanitize the namespace by removing path traversal components and invalid chars."""
-        namespace = namespace.lower()
-
         # Remove any directory traversal attempt
         base_namespace = os.path.basename(namespace)
 
         # Only allow alphanumeric chars, underscore, and hyphen
-        sanitized = "".join(c for c in base_namespace if c.isalnum() or c in "_-")
+        sanitized = "".join(c for c in base_namespace.lower() if c.isalnum() or c in "_-")
 
         if not sanitized:
             logger.warning("Empty filename after sanitization.")
