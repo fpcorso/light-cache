@@ -1,0 +1,25 @@
+[project]
+name = "simple-cache"
+version = "1.0.0"
+description = "A simple caching tool for disk-based or object-based caching"
+keywords = [ "cache" ]
+authors = [
+    {name = "Frank Corso",email = "frank@frankcorso.me"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+[project.urls]
+repository = "https://github.com/fpcorso/simple-cache"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.4.1"
+
