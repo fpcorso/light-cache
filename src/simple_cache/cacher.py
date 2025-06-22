@@ -1,6 +1,9 @@
 import datetime
+import logging
 import os
 import pickle
+
+logger = logging.getLogger(__name__)
 
 
 class Cacher:
@@ -14,11 +17,12 @@ class Cacher:
         if key not in cache:
             return None
 
-        if 'expires' not in cache[key] or cache[key]['expires'] < datetime.datetime.now():
+        if self._is_expired(cache[key]):
             del cache[key]
             self.save_cache(cache)
             return None
 
+        logger.debug(f"Cache hit for key: {key}")
         return cache[key]['data']
 
     def cache_item(self, key: str, item: dict | list, expires_in_hours: int = 24):
@@ -38,7 +42,7 @@ class Cacher:
             with open(filename, 'wb') as cache_file:
                 pickle.dump(data, cache_file)
         except Exception as e:
-            print(f"Failed to write cache to file: {e}")
+            logger.error(f"Failed to write cache to file: {e}")
 
     def load_cache(self) -> dict:
         filename = self._get_cache_path()
@@ -57,3 +61,6 @@ class Cacher:
             filename = f"{self.namespace}.pkl"
 
         return filename
+
+    def _is_expired(self, item: dict) -> bool:
+        return 'expires' not in item or item['expires'] < datetime.datetime.now()
