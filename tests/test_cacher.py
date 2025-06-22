@@ -98,3 +98,76 @@ def test_get_cache_path_with_nested_directory():
     )
     expected = os.path.join("path", "to", "cache", "test_cache.json")
     assert cacher._get_cache_path() == expected
+
+
+def test_basic_filename():
+    """Test basic valid filename sanitization."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_namespace("test") == "test"
+    assert cacher._sanitize_namespace("test-file") == "test-file"
+    assert cacher._sanitize_namespace("test_file") == "test_file"
+
+
+def test_remove_path_components():
+    """Test removal of path components."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_namespace("../test") == "test"
+    assert cacher._sanitize_namespace("/etc/passwd") == "passwd"
+    assert cacher._sanitize_namespace("folder/subfolder/file") == "file"
+    assert cacher._sanitize_namespace("C:\\Windows\\file") == "file"
+
+
+def test_remove_special_chars():
+    """Test removal of special characters."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_namespace("test!@#$%^&*()") == "test"
+    assert cacher._sanitize_namespace("hello world") == "helloworld"
+    assert cacher._sanitize_namespace("file.txt") == "filetxt"
+    assert cacher._sanitize_namespace("$pecial.file.name") == "pecialfilename"
+
+
+def test_empty_or_invalid_input():
+    """Test handling of empty or invalid input."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_namespace("") == "general_cache"
+    assert cacher._sanitize_namespace("...") == "general_cache"
+    assert cacher._sanitize_namespace("   ") == "general_cache"
+    assert cacher._sanitize_namespace("#@!") == "general_cache"
+
+
+def test_valid_directory():
+    """Test valid directory paths."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_directory("test_dir") == "test_dir"
+    assert cacher._sanitize_directory("./test_dir") == "test_dir"
+
+    sub_path = os.path.join("test_dir", "subdir")
+    assert cacher._sanitize_directory(sub_path) == sub_path
+
+
+def test_current_directory():
+    """Test current directory handling."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_directory(".") == "."
+    assert cacher._sanitize_directory("") == "."
+
+
+def test_parent_directory_traversal():
+    """Test parent directory traversal prevention."""
+    cacher = Cacher(persist_cache=False)
+    assert cacher._sanitize_directory("../outside") == ".cache"
+    assert cacher._sanitize_directory("../../outside") == ".cache"
+    assert cacher._sanitize_directory("test_dir/../../outside") == ".cache"
+
+
+def test_absolute_paths():
+    """Test absolute path handling."""
+    cacher = Cacher(persist_cache=False)
+    # Should reject absolute paths outside CWD
+    assert cacher._sanitize_directory("/tmp") == ".cache"
+    assert cacher._sanitize_directory("/etc") == ".cache"
+
+    # Should allow absolute paths that resolve inside CWD
+    cwd = os.getcwd()
+    test_dir_path = os.path.join(cwd, "test_dir")
+    assert cacher._sanitize_directory(test_dir_path) == "test_dir"

@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-from JSONSerializer import JSONSerializer
+from . import JSONSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ class Cacher:
     ):
         self.persist_cache = persist_cache
         self.keep_cache_in_memory = keep_cache_in_memory
-        self.namespace = namespace
-        self.cache_directory = cache_directory
+        self.namespace = self._sanitize_namespace(namespace)
+        self.cache_directory = self._sanitize_directory(cache_directory)
         self.cache = {}
 
         # Make sure the cache directory exists if we need it.
@@ -115,6 +115,48 @@ class Cacher:
 
     def _is_cache_directory_needed(self) -> bool:
         return bool(self.cache_directory) and self.cache_directory != "."
+
+    @staticmethod
+    def _sanitize_namespace(namespace: str) -> str:
+        """Sanitize the namespace by removing path traversal components and invalid chars."""
+        namespace = namespace.lower()
+
+        # Remove any directory traversal attempt
+        base_namespace = os.path.basename(namespace)
+
+        # Only allow alphanumeric chars, underscore, and hyphen
+        sanitized = ''.join(c for c in base_namespace if c.isalnum() or c in '_-')
+
+        if not sanitized:
+            logger.warning("Empty filename after sanitization.")
+            sanitized = 'general_cache'
+
+        return sanitized
+
+    @staticmethod
+    def _sanitize_directory(directory: str) -> str:
+        """Sanitize the directory path by resolving to the absolute path and checking traversal."""
+        if not directory or directory == '.':
+            return '.'
+
+        # Convert to the absolute path and resolve any symlinks
+        abs_path = os.path.abspath(directory)
+        real_path = os.path.realpath(abs_path)
+
+        # Ensure the directory is within the current working directory
+        cwd = os.path.realpath(os.getcwd())
+        if not real_path.startswith(cwd):
+            logger.warning(f"Attempted directory traversal outside CWD. Defaulting to '.cache'")
+            return '.cache'
+
+        # Convert back to the relative path from CWD
+        try:
+            relative_path = os.path.relpath(real_path, cwd)
+            return relative_path if relative_path != '.' else '.cache'
+        except ValueError:
+            # Handle any path resolution errors
+            logger.warning("Error resolving relative path. Defaulting to '.cache'")
+            return '.cache'
 
     @staticmethod
     def _is_expired(item: dict) -> bool:
