@@ -7,11 +7,18 @@ logger = logging.getLogger(__name__)
 
 
 class Cacher:
-    def __init__(self, namespace: str = 'general_cache', cache_directory: str = '.cache'):
+    def __init__(self, persist_cache: bool = true, keep_cache_in_memory: bool = true, namespace: str = 'general_cache', cache_directory: str = '.cache'):
+        self.persist_cache = persist_cache
+        self.keep_cache_in_memory = keep_cache_in_memory
         self.namespace = namespace
         self.cache_directory = cache_directory
+        self.cache = {}
         self._ensure_cache_directory_exists()
         self.remove_expired_items()
+
+        # If we are using object-caching, go ahead and load the cache in now to be used.
+        if self.keep_cache_in_memory:
+            self.cache = self.load_cache()
 
     def get_cached_item(self, key: str) -> dict | list | None:
         cache = self.load_cache()
@@ -40,14 +47,21 @@ class Cacher:
         self.save_cache(cache)
 
     def save_cache(self, data: dict) -> None:
-        filename = self._get_cache_path()
-        try:
-            with open(filename, 'wb') as cache_file:
-                pickle.dump(data, cache_file)
-        except Exception as e:
-            logger.error(f"Failed to write cache to file: {e}")
+        if self.keep_cache_in_memory:
+            self.cache = data
+
+        if self.persist_cache:
+            filename = self._get_cache_path()
+            try:
+                with open(filename, 'wb') as cache_file:
+                    pickle.dump(data, cache_file)
+            except Exception as e:
+                logger.error(f"Failed to write cache to file: {e}")
 
     def load_cache(self) -> dict:
+        if self.keep_cache_in_memory:
+            return self.cache
+
         filename = self._get_cache_path()
         try:
             with open(filename, 'rb') as cache_file:
