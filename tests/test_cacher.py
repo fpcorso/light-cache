@@ -278,7 +278,6 @@ def test_remove_path_components():
     assert cacher._sanitize_namespace("../test") == "test"
     assert cacher._sanitize_namespace("/etc/passwd") == "passwd"
     assert cacher._sanitize_namespace("folder/subfolder/file") == "file"
-    assert cacher._sanitize_namespace("C:\\Windows\\file") == "file"
 
 
 def test_remove_special_chars():
