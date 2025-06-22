@@ -59,6 +59,47 @@ def test_file_cache_persistence(temp_cache_dir):
     assert retrieved == {"data": "value"}
 
 
+def test_handle_corrupted_cache_file(temp_cache_dir):
+    """Test handling of corrupted cache files."""
+    cache_file = os.path.join(temp_cache_dir, "test_cache.json")
+
+    # Create a corrupted cache file
+    with open(cache_file, "w") as f:
+        f.write("{ invalid json")
+
+    cacher = Cacher(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        namespace="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    # Should handle the corrupted file gracefully
+    data = cacher.load_cache()
+    assert isinstance(data, dict)
+    assert len(data) == 0
+
+
+def test_mixed_mode_operations(temp_cache_dir):
+    """Test operations when both memory and disk caching are enabled."""
+    cacher = Cacher(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        namespace="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    # Cache an item
+    cacher.cache_item("test_key", {"data": "value"})
+
+    # Verify it's in memory
+    assert "test_key" in cacher.load_cache()
+
+    # Verify it's on disk
+    cache_file = os.path.join(temp_cache_dir, "test_cache.json")
+    assert os.path.exists(cache_file)
+
+
 def test_memory_cache_and_retrieve_item():
     """Test basic caching and retrieval when using memory-only cache."""
     cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)

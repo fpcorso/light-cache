@@ -12,7 +12,10 @@ class JSONSerializer:
         return json.dumps(obj, default=self._encode_object)
 
     def decode(self, json_str: str):
-        return json.loads(json_str, object_hook=self._decode_object)
+        try:
+            return json.loads(json_str, object_hook=self._decode_object)
+        except json.decoder.JSONDecodeError:
+            return {}
 
     def _encode_object(self, obj) -> dict:
         for type_, encoder in self.encoders.items():
