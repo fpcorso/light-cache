@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class Cacher:
-    def __init__(self, persist_cache: bool = true, keep_cache_in_memory: bool = true, namespace: str = 'general_cache', cache_directory: str = '.cache'):
+    def __init__(self, persist_cache: bool = True, keep_cache_in_memory: bool = True, namespace: str = 'general_cache', cache_directory: str = '.cache'):
         self.persist_cache = persist_cache
         self.keep_cache_in_memory = keep_cache_in_memory
         self.namespace = namespace
@@ -98,8 +98,26 @@ class Cacher:
             logger.error(f"Failed to create cache directory: {e}")
 
     def _is_cache_directory_needed(self) -> bool:
-        return self.cache_directory and self.cache_directory != '.'
+        return bool(self.cache_directory) and self.cache_directory != '.'
 
     @staticmethod
     def _is_expired(item: dict) -> bool:
-        return 'expires' not in item or item['expires'] < datetime.datetime.now()
+        """
+        Check if a cache item is expired.
+        Returns True if:
+        - item is not a dict
+        - 'expires' key is missing
+        - 'expires' value is not a datetime
+        - expiration time is in the past
+        """
+        if not isinstance(item, dict):
+            return True
+
+        try:
+            expiration = item.get('expires')
+            if not isinstance(expiration, datetime.datetime):
+                return True
+            return expiration < datetime.datetime.now()
+        except Exception:
+            # Catch any comparison errors or other unexpected issues
+            return True
