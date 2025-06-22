@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-from . import JSONSerializer
+from .JSONSerializer import JSONSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class Cacher:
         if self.persist_cache:
             filename = self._get_cache_path()
             try:
-                with open(filename, "wb") as cache_file:
+                with open(filename, "w") as cache_file:
                     cached_data = JSONSerializer().encode(data)
                     cache_file.write(cached_data)
             except Exception as e:
@@ -79,7 +79,7 @@ class Cacher:
 
         filename = self._get_cache_path()
         try:
-            with open(filename, "rb") as cache_file:
+            with open(filename, "r") as cache_file:
                 cached_data = cache_file.read()
                 data = JSONSerializer().decode(cached_data)
         except (FileNotFoundError, EOFError):

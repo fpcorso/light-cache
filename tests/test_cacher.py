@@ -1,9 +1,62 @@
 from datetime import datetime, timedelta
 import os
+import shutil
 
 import pytest
 
 from src.simple_cache import Cacher
+
+
+@pytest.fixture
+def temp_cache_dir():
+    """Create a temporary directory for cache files and clean it up after tests."""
+    cache_dir = os.path.join(os.getcwd(), "test_cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    yield cache_dir
+    shutil.rmtree(cache_dir)
+
+
+def test_file_cache_basic_operations(temp_cache_dir):
+    """Test basic file caching operations."""
+    cacher = Cacher(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        namespace="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    test_data = {"key": "value"}
+    cacher.cache_item("test_key", test_data)
+
+    # Verify file exists
+    cache_file = os.path.join(temp_cache_dir, "test_cache.json")
+    assert os.path.exists(cache_file)
+
+    # Verify data can be retrieved
+    retrieved_data = cacher.get_cached_item("test_key")
+    assert retrieved_data == test_data
+
+
+def test_file_cache_persistence(temp_cache_dir):
+    """Test that cached data persists between cacher instances."""
+    # First instance caches data
+    cacher1 = Cacher(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        namespace="test_cache",
+        cache_directory=temp_cache_dir
+    )
+    cacher1.cache_item("test_key", {"data": "value"})
+
+    # The second instance should be able to read the cached data
+    cacher2 = Cacher(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        namespace="test_cache",
+        cache_directory=temp_cache_dir
+    )
+    retrieved = cacher2.get_cached_item("test_key")
+    assert retrieved == {"data": "value"}
 
 
 def test_memory_cache_and_retrieve_item():
