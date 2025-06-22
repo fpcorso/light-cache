@@ -33,7 +33,7 @@ class Cacher:
         self.save_cache(cache)
 
     def save_cache(self, data: dict) -> None:
-        filename = self._get_file_from_type()
+        filename = self._get_cache_path()
         try:
             with open(filename, 'wb') as cache_file:
                 pickle.dump(data, cache_file)
@@ -41,7 +41,7 @@ class Cacher:
             print(f"Failed to write cache to file: {e}")
 
     def load_cache(self) -> dict:
-        filename = self._get_file_from_type()
+        filename = self._get_cache_path()
         try:
             with open(filename, 'rb') as cache_file:
                 data = pickle.load(cache_file)
@@ -50,7 +50,7 @@ class Cacher:
 
         return data
 
-    def _get_file_from_type(self) -> str:
+    def _get_cache_path(self) -> str:
         if self.cache_directory and self.cache_directory != '.':
             filename = os.path.join(self.cache_directory, f"{self.namespace}.pkl")
         else:
