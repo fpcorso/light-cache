@@ -4,13 +4,9 @@ from datetime import datetime
 
 class JSONSerializer:
     def __init__(self):
-        self.encoders = {
-            datetime: lambda obj: {"__datetime__": obj.isoformat()}
-        }
+        self.encoders = {datetime: lambda obj: {"__datetime__": obj.isoformat()}}
 
-        self.decoders = {
-            "__datetime__": lambda obj: datetime.fromisoformat(obj)
-        }
+        self.decoders = {"__datetime__": lambda obj: datetime.fromisoformat(obj)}
 
     def encode(self, obj) -> str:
         return json.dumps(obj, default=self._encode_object)
@@ -28,8 +24,7 @@ class JSONSerializer:
         if not isinstance(obj, dict):
             return obj
 
-        special_type = next((key for key in self.decoders.keys()
-                             if key in obj), None)
+        special_type = next((key for key in self.decoders.keys() if key in obj), None)
         if special_type:
             return self.decoders[special_type](obj[special_type])
         return obj

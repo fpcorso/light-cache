@@ -9,7 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class Cacher:
-    def __init__(self, persist_cache: bool = True, keep_cache_in_memory: bool = True, namespace: str = 'general_cache', cache_directory: str = '.cache'):
+    def __init__(
+        self,
+        persist_cache: bool = True,
+        keep_cache_in_memory: bool = True,
+        namespace: str = "general_cache",
+        cache_directory: str = ".cache",
+    ):
         self.persist_cache = persist_cache
         self.keep_cache_in_memory = keep_cache_in_memory
         self.namespace = namespace
@@ -40,14 +46,15 @@ class Cacher:
             return None
 
         logger.debug(f"Cache hit for key: {key}")
-        return item['data']
+        return item["data"]
 
     def cache_item(self, key: str, item: dict | list, expires_in_hours: int = 24):
         cache = self.load_cache()
 
         prepared_item = {
-            'expires': datetime.datetime.now() + datetime.timedelta(hours=expires_in_hours),
-            'data': item
+            "expires": datetime.datetime.now()
+            + datetime.timedelta(hours=expires_in_hours),
+            "data": item,
         }
 
         cache[key] = prepared_item
@@ -60,7 +67,7 @@ class Cacher:
         if self.persist_cache:
             filename = self._get_cache_path()
             try:
-                with open(filename, 'wb') as cache_file:
+                with open(filename, "wb") as cache_file:
                     cached_data = JSONSerializer().encode(data)
                     cache_file.write(cached_data)
             except Exception as e:
@@ -72,7 +79,7 @@ class Cacher:
 
         filename = self._get_cache_path()
         try:
-            with open(filename, 'rb') as cache_file:
+            with open(filename, "rb") as cache_file:
                 cached_data = cache_file.read()
                 data = JSONSerializer().decode(cached_data)
         except (FileNotFoundError, EOFError):
@@ -107,7 +114,7 @@ class Cacher:
             logger.error(f"Failed to create cache directory: {e}")
 
     def _is_cache_directory_needed(self) -> bool:
-        return bool(self.cache_directory) and self.cache_directory != '.'
+        return bool(self.cache_directory) and self.cache_directory != "."
 
     @staticmethod
     def _is_expired(item: dict) -> bool:
@@ -123,7 +130,7 @@ class Cacher:
             return True
 
         try:
-            expiration = item.get('expires')
+            expiration = item.get("expires")
             if not isinstance(expiration, datetime.datetime):
                 return True
             return expiration < datetime.datetime.now()
