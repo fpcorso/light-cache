@@ -2,6 +2,8 @@
 
 A Python package for using disk-based or object-bashed caching, perfect for simple scripts or Jupyter Notebooks.
 
+## Features
+
 Includes the ability to:
 
 * Have multiple cache stores
@@ -57,8 +59,11 @@ cache = CacheStore()
 cache.put('some-key', 'some-value')
 my_value = cache.get('some-key')
 
+# `get()` returns None if cache doesn't exist. This can be changed using the `default` parameter
+my_value = cache.get('some-nonexistent-key', default=0)
+
 if cache.has('some-key'):
-    // do something
+    # do something
 
 # Expiration is in seconds (defaults to 5 minutes)
 cache.put('new-key', 'new-value', expires=1200)
@@ -84,23 +89,27 @@ cache = CacheStore(cache_directory='src/app/cache')
 
 Community made feature requests, patches, bug reports, and contributions are always welcome.
 
+Please review [our contributing guidelines](https://github.com/fpcorso/simple-cache/blob/main/CONTRIBUTING.md) if you decide to make a contribution.
+
+### Setting up development environment
+
 This project uses [Poetry](https://python-poetry.org/docs/) for managing dependencies and environments.
 
-### Tests 
+#### Tests 
 
 This project uses [pytest](https://docs.pytest.org/en/stable/) for its tests.
 
 To run tests locally, use:
 
-```text
+```shell
 poetry run pytest
 ```
 
-### Formatter
+#### Formatter
 
 This project uses [black](https://black.readthedocs.io/en/stable/index.html) for formatting. To run the formatter, use:
 
-```text
+```shell
 poetry run black .
 ```
 
