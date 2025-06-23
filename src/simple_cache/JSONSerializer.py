@@ -3,9 +3,19 @@ from datetime import datetime
 
 
 class JSONSerializer:
+    """
+    A JSON serializer with support for custom type encoding and decoding.
+
+    This class extends the standard JSON serialization to handle additional
+    Python types, particularly datetime objects. It provides methods to encode
+    Python objects to JSON strings and decode JSON strings back to Python objects.
+    """
+
     def __init__(self):
+        # Define custom encoders for specific types
         self.encoders = {datetime: lambda obj: {"__datetime__": obj.isoformat()}}
 
+        # Define custom decoders for specific type markers
         self.decoders = {"__datetime__": lambda obj: datetime.fromisoformat(obj)}
 
     def encode(self, obj) -> str:
