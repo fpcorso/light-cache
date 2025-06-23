@@ -52,7 +52,7 @@ class CacheStore:
             self.cache = self.load_cache()
             logger.debug(f"Loaded {len(self.cache)} items into memory cache")
 
-    def get(self, key: str, default=None) -> dict | list | None:
+    def get(self, key: str, default=None):
         """
         Retrieve an item from the cache.
 
@@ -79,13 +79,13 @@ class CacheStore:
         logger.debug(f"Cache hit for key: {key}")
         return item["data"]
 
-    def put(self, key: str, item: dict | list, expires: int | None = 600):
+    def put(self, key: str, item, expires: int | None = 600):
         """
         Store an item in the cache.
 
         Args:
             key (str): The key under which to store the item.
-            item (dict | list): The data to cache.
+            item (Any): The data to cache.
             expires (int | None): Time in seconds until the item expires.
                                 None means the item never expires. Defaults to 600 seconds.
         """
