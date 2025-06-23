@@ -1,4 +1,4 @@
-# simple-cache
+# light-cache
 
 A Python package for using disk-based or object-bashed caching, perfect for simple scripts or Jupyter Notebooks.
 
@@ -32,7 +32,7 @@ A Python package for using disk-based or object-bashed caching, perfect for simp
 Use pip to install:
 
 ```shell
-pip install rank-choicer
+pip install light-cache
 ```
 
 ## Usage
@@ -104,7 +104,7 @@ cache = CacheStore(cache_directory='src/app/cache')
 
 Community made feature requests, patches, bug reports, and contributions are always welcome.
 
-Please review [our contributing guidelines](https://github.com/fpcorso/simple-cache/blob/main/CONTRIBUTING.md) if you decide to make a contribution.
+Please review [our contributing guidelines](https://github.com/fpcorso/light-cache/blob/main/CONTRIBUTING.md) if you decide to make a contribution.
 
 ### Setting up development environment
 
@@ -130,4 +130,4 @@ poetry run black .
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](https://github.com/fpcorso/simple-cache/blob/main/LICENSE) for more details.
+This project is licensed under the MIT License. See [LICENSE](https://github.com/fpcorso/light-cache/blob/main/LICENSE) for more details.

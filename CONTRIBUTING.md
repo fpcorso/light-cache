@@ -4,7 +4,7 @@ When contributing, please ensure you follow the guidelines below so that we can 
 
 ## Creating Issues
 
-* If you have any bugs or feature requests, please [create an issue](https://github.com/fpcorso/simple-cache/issues/new)
+* If you have any bugs or feature requests, please [create an issue](https://github.com/fpcorso/light-cache/issues/new)
 * For bug reports, please clearly describe the bug/issue and include steps on how to reproduce it
 * For feature requests, please clearly describe what you would like and how it would be used
 

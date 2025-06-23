@@ -1,7 +1,7 @@
 [project]
-name = "simple-cache"
-version = "1.0.0"
-description = "A simple caching tool for disk-based or object-based caching"
+name = "light-cache"
+version = "0.1.0"
+description = "A simple, lightweight caching library for disk-based or object-based caching"
 keywords = [ "cache" ]
 authors = [
     {name = "Frank Corso",email = "frank@frankcorso.me"}
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.urls]
-repository = "https://github.com/fpcorso/simple-cache"
+repository = "https://github.com/fpcorso/light-cache"
 
 
 [build-system]
