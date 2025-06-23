@@ -170,6 +170,20 @@ def test_memory_cache_nonexistent_key():
     assert retrieved is None
 
 
+def test_has_with_existing_key():
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+    test_data = {"test": "value"}
+    cacher.put("test_key", test_data)
+
+    assert cacher.has("test_key") is True
+
+
+def test_has_with_nonexistent_key():
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+
+    assert cacher.has("nonexistent_key") is False
+
+
 def test_is_cache_directory_needed_with_valid_directory():
     cacher = Cacher(persist_cache=False, store="test", cache_directory="test_dir")
     assert cacher._is_cache_directory_needed() is True

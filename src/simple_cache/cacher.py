@@ -70,6 +70,19 @@ class Cacher:
         cache[key] = prepared_item
         self.save_cache(cache)
 
+    def has(self, key: str) -> bool:
+        cache = self.load_cache()
+
+        if key in cache:
+            item = cache[key].copy()
+            if self._is_expired(item):
+                del cache[key]
+                self.save_cache(cache)
+            else:
+                return True
+
+        return False
+
     def save_cache(self, data: dict) -> None:
         if self.keep_cache_in_memory:
             self.cache = data
