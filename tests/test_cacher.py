@@ -204,11 +204,6 @@ def test_is_cache_directory_needed_with_empty_directory():
     assert cacher._is_cache_directory_needed() is False
 
 
-def test_is_expired_with_no_expiration():
-    item = {"data": "test"}
-    assert Cacher._is_expired(item) is True
-
-
 def test_is_expired_with_future_expiration():
     future_time = int(datetime.now().timestamp()) + 3600
     item = {"data": "test", "expires": future_time}
@@ -220,12 +215,16 @@ def test_is_expired_with_past_expiration():
     item = {"data": "test", "expires": past_time}
     assert Cacher._is_expired(item) is True
 
+def test_is_expired_with_no_expiration():
+    """Test that items with None expiration never expire"""
+    item = {"expires": None, "data": "test"}
+    assert Cacher._is_expired(item) is False
+
 
 @pytest.mark.parametrize(
     "invalid_item",
     [
         {"expires": "not a timestamp"},  # String instead of int
-        {"expires": None},  # None value
         {"expires": []},  # List
         None,  # None instead of dict
         [],  # List instead of dict

@@ -56,11 +56,11 @@ class Cacher:
         logger.debug(f"Cache hit for key: {key}")
         return item["data"]
 
-    def put(self, key: str, item: dict | list, expires: int = 600):
+    def put(self, key: str, item: dict | list, expires: int | None = 600):
         cache = self.load_cache()
 
         prepared_item = {
-            "expires": int(datetime.datetime.now().timestamp()) + expires,
+            "expires": None if expires is None else int(datetime.datetime.now().timestamp()) + expires,
             "data": item,
         }
 
@@ -185,14 +185,22 @@ class Cacher:
         Returns True if:
         - item is not a dict
         - 'expires' key is missing
-        - 'expires' value is not an integer timestamp
+        - 'expires' value is not an integer timestamp or None
         - expiration time is in the past
         """
         if not isinstance(item, dict):
             return True
 
+        if "expires" not in item:
+            return True
+
         try:
-            expiration = item.get("expires")
+            expiration = item["expires"]
+
+            # If never expires
+            if expiration is None:
+                return False
+            # If is invalid, consider it expired
             if not isinstance(expiration, int):
                 return True
             return expiration < int(datetime.datetime.now().timestamp())
