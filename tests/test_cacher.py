@@ -184,6 +184,33 @@ def test_has_with_nonexistent_key():
     assert cacher.has("nonexistent_key") is False
 
 
+def test_forget_existing_item():
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+
+    # Cache an item
+    cacher.put("test_key", {"data": "value"})
+
+    # Verify it exists
+    assert cacher.has("test_key") is True
+
+    # Forget it
+    result = cacher.forget("test_key")
+
+    # Verify it was forgotten
+    assert result is True
+    assert cacher.has("test_key") is False
+    assert cacher.get("test_key") is None
+
+
+def test_forget_nonexistent_item():
+    cacher = Cacher(persist_cache=False, keep_cache_in_memory=True)
+
+    # Try to forget non-existent item
+    result = cacher.forget("nonexistent")
+
+    assert result is False
+
+
 def test_is_cache_directory_needed_with_valid_directory():
     cacher = Cacher(persist_cache=False, store="test", cache_directory="test_dir")
     assert cacher._is_cache_directory_needed() is True

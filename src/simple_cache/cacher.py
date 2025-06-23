@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 '''
 TODO: Is there a better name for this class and JSONSerializer?
 TODO: remember() helper method?
-TODO: Allow for non-expiring cache?
 TODO: If above, maybe rememberForever() helper method?
 TODO: pull() or similar method that gets() and then deletes() from cache if it existed
 TODO: Maybe add putMany or addMany for bulk adding?
@@ -78,6 +77,14 @@ class Cacher:
             else:
                 return True
 
+        return False
+
+    def forget(self, key: str) -> bool:
+        cache = self.load_cache()
+        if key in cache:
+            del cache[key]
+            self.save_cache(cache)
+            return True
         return False
 
     def save_cache(self, data: dict) -> None:
