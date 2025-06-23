@@ -8,8 +8,6 @@ logger = logging.getLogger(__name__)
 
 '''
 TODO: Is there a better name for this class and JSONSerializer?
-TODO: Add helper method for seeing if a cached key exists
-TODO: Change expires to be timestamp seconds and expiration parameter to be in seconds instead of hours
 TODO: remember() helper method?
 TODO: Allow for non-expiring cache?
 TODO: If above, maybe rememberForever() helper method?
@@ -58,12 +56,11 @@ class Cacher:
         logger.debug(f"Cache hit for key: {key}")
         return item["data"]
 
-    def put(self, key: str, item: dict | list, expires_in_hours: int = 24):
+    def put(self, key: str, item: dict | list, expires: int = 600):
         cache = self.load_cache()
 
         prepared_item = {
-            "expires": datetime.datetime.now()
-            + datetime.timedelta(hours=expires_in_hours),
+            "expires": int(datetime.datetime.now().timestamp()) + expires,
             "data": item,
         }
 
@@ -188,7 +185,7 @@ class Cacher:
         Returns True if:
         - item is not a dict
         - 'expires' key is missing
-        - 'expires' value is not a datetime
+        - 'expires' value is not an integer timestamp
         - expiration time is in the past
         """
         if not isinstance(item, dict):
@@ -196,9 +193,9 @@ class Cacher:
 
         try:
             expiration = item.get("expires")
-            if not isinstance(expiration, datetime.datetime):
+            if not isinstance(expiration, int):
                 return True
-            return expiration < datetime.datetime.now()
+            return expiration < int(datetime.datetime.now().timestamp())
         except Exception:
             # Catch any comparison errors or other unexpected issues
             return True

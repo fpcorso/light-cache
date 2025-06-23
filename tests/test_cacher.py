@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 import shutil
 
@@ -210,13 +210,13 @@ def test_is_expired_with_no_expiration():
 
 
 def test_is_expired_with_future_expiration():
-    future_time = datetime.now() + timedelta(hours=1)
+    future_time = int(datetime.now().timestamp()) + 3600
     item = {"data": "test", "expires": future_time}
     assert Cacher._is_expired(item) is False
 
 
 def test_is_expired_with_past_expiration():
-    past_time = datetime.now() - timedelta(hours=1)
+    past_time = int(datetime.now().timestamp()) - 3600
     item = {"data": "test", "expires": past_time}
     assert Cacher._is_expired(item) is True
 
@@ -224,17 +224,16 @@ def test_is_expired_with_past_expiration():
 @pytest.mark.parametrize(
     "invalid_item",
     [
-        {"expires": "not a datetime"},  # String instead of datetime
+        {"expires": "not a timestamp"},  # String instead of int
         {"expires": None},  # None value
-        {"expires": 123},  # Integer
         {"expires": []},  # List
         None,  # None instead of dict
         [],  # List instead of dict
         "string",  # String instead of dict
-        42,  # Integer instead of dict
         {},  # Empty dict
         {"data": "test"},  # Missing expires key
     ],
+
 )
 def test_is_expired_with_invalid_items(invalid_item):
     """Test that invalid items are considered expired"""
