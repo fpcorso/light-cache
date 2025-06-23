@@ -7,7 +7,7 @@ from .JSONSerializer import JSONSerializer
 logger = logging.getLogger(__name__)
 
 
-class Cacher:
+class CacheStore:
     """
     A flexible caching system that supports both in-memory and persistent file-based caching.
 
