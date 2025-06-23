@@ -35,6 +35,11 @@ class Cacher:
         self.cache_directory = self._sanitize_directory(cache_directory)
         self.cache = {}
 
+        logger.info(
+            f"Initializing cache store '{self.store}' "
+            f"(persist: {persist_cache}, in-memory: {keep_cache_in_memory})"
+        )
+
         # Make sure the cache directory exists if we need it.
         if self.persist_cache:
             self._ensure_cache_directory_exists()
@@ -45,6 +50,7 @@ class Cacher:
         # If we are using object-caching, go ahead and load the cache in now to be used.
         if self.keep_cache_in_memory:
             self.cache = self.load_cache()
+            logger.debug(f"Loaded {len(self.cache)} items into memory cache")
 
     def get(self, key: str, default=None) -> dict | list | None:
         """
@@ -60,10 +66,12 @@ class Cacher:
         cache = self.load_cache()
 
         if key not in cache:
+            logger.debug(f"Cache miss for key: {key}")
             return default
 
         item = cache[key].copy()
         if self._is_expired(item):
+            logger.debug(f"Cache item expired for key: {key}")
             del cache[key]
             self.save_cache(cache)
             return default
@@ -94,6 +102,9 @@ class Cacher:
 
         cache[key] = prepared_item
         self.save_cache(cache)
+
+        expiry_str = "never" if expires is None else f"in {expires} seconds"
+        logger.debug(f"Cached item with key '{key}' (expires: {expiry_str})")
 
     def has(self, key: str) -> bool:
         """
@@ -131,6 +142,7 @@ class Cacher:
         if key in cache:
             del cache[key]
             self.save_cache(cache)
+            logger.debug(f"Forgot cache item with key: {key}")
             return True
         return False
 
@@ -143,6 +155,7 @@ class Cacher:
         """
         if self.keep_cache_in_memory:
             self.cache = data
+            logger.debug(f"Updated in-memory cache with {len(data)} items")
 
         if self.persist_cache:
             filename = self._get_cache_path()
@@ -150,6 +163,7 @@ class Cacher:
                 with open(filename, "w") as cache_file:
                     cached_data = JSONSerializer().encode(data)
                     cache_file.write(cached_data)
+                logger.debug(f"Saved cache to file: {filename}")
             except Exception as e:
                 logger.error(f"Failed to write cache to file: {e}")
 
@@ -168,7 +182,15 @@ class Cacher:
             with open(filename, "r") as cache_file:
                 cached_data = cache_file.read()
                 data = JSONSerializer().decode(cached_data)
-        except (FileNotFoundError, EOFError):
+            logger.debug(f"Loaded {len(data)} items from cache file: {filename}")
+        except FileNotFoundError:
+            logger.info(f"Cache file not found: {filename}, starting with empty cache")
+            data = {}
+        except EOFError:
+            logger.warning(f"Empty or corrupted cache file: {filename}")
+            data = {}
+        except Exception as e:
+            logger.error(f"Error loading cache from {filename}: {e}")
             data = {}
 
         return data
@@ -180,6 +202,12 @@ class Cacher:
         expired = [k for k, v in cache.items() if self._is_expired(v)]
         for key in expired:
             del cache[key]
+
+        if expired:
+            logger.info(
+                f"Removed {len(expired)} expired items from cache "
+                f"(was: {original_size}, now: {len(cache)})"
+            )
 
         self.save_cache(cache)
 
