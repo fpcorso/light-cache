@@ -40,7 +40,7 @@ pip install light-cache
 To get started, you need to set up a cache store:
 
 ```python
-from simple_cache import CacheStore
+from light_cache import CacheStore
 
 cache = CacheStore(persist_cache=True, keep_cache_in_memory=True)
 ```
@@ -56,7 +56,7 @@ There are three main modes for this cache:
 You can set up different cache stores for different information. For example, if you need one store for just movies and another for podcasts, you could:
 
 ```python
-from simple_cache import CacheStore
+from light_cache import CacheStore
 
 movie_cache = CacheStore(store='movies')
 podcast_cache = CacheStore(store='podcasts')
@@ -67,7 +67,7 @@ podcast_cache = CacheStore(store='podcasts')
 The main methods are `get()`, `put()`, `has()`, and `forget()`.
 
 ```python
-from simple_cache import CacheStore
+from light_cache import CacheStore
 
 cache = CacheStore()
 
@@ -95,7 +95,7 @@ cache.forget('never-expire-key')
 When using disk-based cache, the files are stored in `.cache/` but this can be changed:
 
 ```python
-from simple_cache import CacheStore
+from light_cache import CacheStore
 
 cache = CacheStore(cache_directory='src/app/cache')
 ```
