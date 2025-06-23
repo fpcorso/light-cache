@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 '''
 TODO: Is there a better name for this class and JSONSerializer?
-TODO: Change namespace to "store" or other larger separation to allow for maybe adding namespace inside cache
 TODO: Add helper method for seeing if a cached key exists
 TODO: Change expires to be timestamp seconds and expiration parameter to be in seconds instead of hours
 TODO: remember() helper method?
@@ -17,18 +16,19 @@ TODO: If above, maybe rememberForever() helper method?
 TODO: pull() or similar method that gets() and then deletes() from cache if it existed
 TODO: Maybe add putMany or addMany for bulk adding?
 TODO: Add method for deleting a cached item
+TODO: Maybe use constants for default values?
 '''
 class Cacher:
     def __init__(
         self,
         persist_cache: bool = True,
         keep_cache_in_memory: bool = True,
-        namespace: str = "general_cache",
+        store: str = "general_cache",
         cache_directory: str = ".cache",
     ):
         self.persist_cache = persist_cache
         self.keep_cache_in_memory = keep_cache_in_memory
-        self.namespace = self._sanitize_namespace(namespace)
+        self.store = self._sanitize_store(store)
         self.cache_directory = self._sanitize_directory(cache_directory)
         self.cache = {}
 
@@ -108,9 +108,9 @@ class Cacher:
 
     def _get_cache_path(self) -> str:
         if self._is_cache_directory_needed():
-            filename = os.path.join(self.cache_directory, f"{self.namespace}.json")
+            filename = os.path.join(self.cache_directory, f"{self.store}.json")
         else:
-            filename = f"{self.namespace}.json"
+            filename = f"{self.store}.json"
 
         return filename
 
@@ -127,13 +127,13 @@ class Cacher:
         return bool(self.cache_directory) and self.cache_directory != "."
 
     @staticmethod
-    def _sanitize_namespace(namespace: str) -> str:
-        """Sanitize the namespace by removing path traversal components and invalid chars."""
+    def _sanitize_store(store: str) -> str:
+        """Sanitize the store by removing path traversal components and invalid chars."""
         # Remove any directory traversal attempt
-        base_namespace = os.path.basename(namespace)
+        base_store = os.path.basename(store)
 
         # Only allow alphanumeric chars, underscore, and hyphen
-        sanitized = "".join(c for c in base_namespace.lower() if c.isalnum() or c in "_-")
+        sanitized = "".join(c for c in base_store.lower() if c.isalnum() or c in "_-")
 
         if not sanitized:
             logger.warning("Empty filename after sanitization.")

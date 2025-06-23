@@ -21,7 +21,7 @@ def test_file_cache_basic_operations(temp_cache_dir):
     cacher = Cacher(
         persist_cache=True,
         keep_cache_in_memory=False,
-        namespace="test_cache",
+        store="test_cache",
         cache_directory=temp_cache_dir,
     )
 
@@ -43,7 +43,7 @@ def test_file_cache_persistence(temp_cache_dir):
     cacher1 = Cacher(
         persist_cache=True,
         keep_cache_in_memory=False,
-        namespace="test_cache",
+        store="test_cache",
         cache_directory=temp_cache_dir
     )
     cacher1.put("test_key", {"data": "value"})
@@ -52,7 +52,7 @@ def test_file_cache_persistence(temp_cache_dir):
     cacher2 = Cacher(
         persist_cache=True,
         keep_cache_in_memory=False,
-        namespace="test_cache",
+        store="test_cache",
         cache_directory=temp_cache_dir
     )
     retrieved = cacher2.get("test_key")
@@ -70,7 +70,7 @@ def test_handle_corrupted_cache_file(temp_cache_dir):
     cacher = Cacher(
         persist_cache=True,
         keep_cache_in_memory=False,
-        namespace="test_cache",
+        store="test_cache",
         cache_directory=temp_cache_dir,
     )
 
@@ -85,7 +85,7 @@ def test_mixed_mode_operations(temp_cache_dir):
     cacher = Cacher(
         persist_cache=True,
         keep_cache_in_memory=True,
-        namespace="test_cache",
+        store="test_cache",
         cache_directory=temp_cache_dir,
     )
 
@@ -171,22 +171,22 @@ def test_memory_cache_nonexistent_key():
 
 
 def test_is_cache_directory_needed_with_valid_directory():
-    cacher = Cacher(persist_cache=False, namespace="test", cache_directory="test_dir")
+    cacher = Cacher(persist_cache=False, store="test", cache_directory="test_dir")
     assert cacher._is_cache_directory_needed() is True
 
 
 def test_is_cache_directory_needed_with_dot_directory():
-    cacher = Cacher(persist_cache=False, namespace="test", cache_directory=".")
+    cacher = Cacher(persist_cache=False, store="test", cache_directory=".")
     assert cacher._is_cache_directory_needed() is False
 
 
 def test_is_cache_directory_needed_with_none_directory():
-    cacher = Cacher(persist_cache=False, namespace="test", cache_directory=None)
+    cacher = Cacher(persist_cache=False, store="test", cache_directory=None)
     assert cacher._is_cache_directory_needed() is False
 
 
 def test_is_cache_directory_needed_with_empty_directory():
-    cacher = Cacher(persist_cache=False, namespace="test", cache_directory="")
+    cacher = Cacher(persist_cache=False, store="test", cache_directory="")
     assert cacher._is_cache_directory_needed() is False
 
 
@@ -230,7 +230,7 @@ def test_is_expired_with_invalid_items(invalid_item):
 def test_get_cache_path_with_directory():
     """Test cache path generation with a directory"""
     cacher = Cacher(
-        persist_cache=False, namespace="test_cache", cache_directory="cache_dir"
+        persist_cache=False, store="test_cache", cache_directory="cache_dir"
     )
     expected = os.path.join("cache_dir", "test_cache.json")
     assert cacher._get_cache_path() == expected
@@ -238,19 +238,19 @@ def test_get_cache_path_with_directory():
 
 def test_get_cache_path_without_directory():
     """Test cache path generation with no directory (None)"""
-    cacher = Cacher(persist_cache=False, namespace="test_cache", cache_directory=None)
+    cacher = Cacher(persist_cache=False, store="test_cache", cache_directory=None)
     assert cacher._get_cache_path() == "test_cache.json"
 
 
 def test_get_cache_path_with_dot_directory():
     """Test cache path generation with the '.' directory"""
-    cacher = Cacher(persist_cache=False, namespace="test_cache", cache_directory=".")
+    cacher = Cacher(persist_cache=False, store="test_cache", cache_directory=".")
     assert cacher._get_cache_path() == "test_cache.json"
 
 
 def test_get_cache_path_with_empty_directory():
     """Test cache path generation with an empty string directory"""
-    cacher = Cacher(persist_cache=False, namespace="test_cache", cache_directory="")
+    cacher = Cacher(persist_cache=False, store="test_cache", cache_directory="")
     assert cacher._get_cache_path() == "test_cache.json"
 
 
@@ -258,7 +258,7 @@ def test_get_cache_path_with_nested_directory():
     """Test cache path generation with a nested directory path"""
     nested_path = os.path.join("path", "to", "cache")
     cacher = Cacher(
-        persist_cache=False, namespace="test_cache", cache_directory=nested_path
+        persist_cache=False, store="test_cache", cache_directory=nested_path
     )
     expected = os.path.join("path", "to", "cache", "test_cache.json")
     assert cacher._get_cache_path() == expected
@@ -267,35 +267,35 @@ def test_get_cache_path_with_nested_directory():
 def test_basic_filename():
     """Test basic valid filename sanitization."""
     cacher = Cacher(persist_cache=False)
-    assert cacher._sanitize_namespace("test") == "test"
-    assert cacher._sanitize_namespace("test-file") == "test-file"
-    assert cacher._sanitize_namespace("test_file") == "test_file"
+    assert cacher._sanitize_store("test") == "test"
+    assert cacher._sanitize_store("test-file") == "test-file"
+    assert cacher._sanitize_store("test_file") == "test_file"
 
 
 def test_remove_path_components():
     """Test removal of path components."""
     cacher = Cacher(persist_cache=False)
-    assert cacher._sanitize_namespace("../test") == "test"
-    assert cacher._sanitize_namespace("/etc/passwd") == "passwd"
-    assert cacher._sanitize_namespace("folder/subfolder/file") == "file"
+    assert cacher._sanitize_store("../test") == "test"
+    assert cacher._sanitize_store("/etc/passwd") == "passwd"
+    assert cacher._sanitize_store("folder/subfolder/file") == "file"
 
 
 def test_remove_special_chars():
     """Test removal of special characters."""
     cacher = Cacher(persist_cache=False)
-    assert cacher._sanitize_namespace("test!@#$%^&*()") == "test"
-    assert cacher._sanitize_namespace("hello world") == "helloworld"
-    assert cacher._sanitize_namespace("file.txt") == "filetxt"
-    assert cacher._sanitize_namespace("$pecial.file.name") == "pecialfilename"
+    assert cacher._sanitize_store("test!@#$%^&*()") == "test"
+    assert cacher._sanitize_store("hello world") == "helloworld"
+    assert cacher._sanitize_store("file.txt") == "filetxt"
+    assert cacher._sanitize_store("$pecial.file.name") == "pecialfilename"
 
 
 def test_empty_or_invalid_input():
     """Test handling of empty or invalid input."""
     cacher = Cacher(persist_cache=False)
-    assert cacher._sanitize_namespace("") == "general_cache"
-    assert cacher._sanitize_namespace("...") == "general_cache"
-    assert cacher._sanitize_namespace("   ") == "general_cache"
-    assert cacher._sanitize_namespace("#@!") == "general_cache"
+    assert cacher._sanitize_store("") == "general_cache"
+    assert cacher._sanitize_store("...") == "general_cache"
+    assert cacher._sanitize_store("   ") == "general_cache"
+    assert cacher._sanitize_store("#@!") == "general_cache"
 
 
 def test_valid_directory():
