@@ -44,7 +44,7 @@ def test_file_cache_persistence(temp_cache_dir):
         persist_cache=True,
         keep_cache_in_memory=False,
         store="test_cache",
-        cache_directory=temp_cache_dir
+        cache_directory=temp_cache_dir,
     )
     cacher1.put("test_key", {"data": "value"})
 
@@ -53,7 +53,7 @@ def test_file_cache_persistence(temp_cache_dir):
         persist_cache=True,
         keep_cache_in_memory=False,
         store="test_cache",
-        cache_directory=temp_cache_dir
+        cache_directory=temp_cache_dir,
     )
     retrieved = cacher2.get("test_key")
     assert retrieved == {"data": "value"}
@@ -242,6 +242,7 @@ def test_is_expired_with_past_expiration():
     item = {"data": "test", "expires": past_time}
     assert Cacher._is_expired(item) is True
 
+
 def test_is_expired_with_no_expiration():
     """Test that items with None expiration never expire"""
     item = {"expires": None, "data": "test"}
@@ -259,7 +260,6 @@ def test_is_expired_with_no_expiration():
         {},  # Empty dict
         {"data": "test"},  # Missing expires key
     ],
-
 )
 def test_is_expired_with_invalid_items(invalid_item):
     """Test that invalid items are considered expired"""

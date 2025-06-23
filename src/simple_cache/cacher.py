@@ -6,15 +6,7 @@ from .JSONSerializer import JSONSerializer
 
 logger = logging.getLogger(__name__)
 
-'''
-TODO: Is there a better name for this class and JSONSerializer?
-TODO: remember() helper method?
-TODO: If above, maybe rememberForever() helper method?
-TODO: pull() or similar method that gets() and then deletes() from cache if it existed
-TODO: Maybe add putMany or addMany for bulk adding?
-TODO: Add method for deleting a cached item
-TODO: Maybe use constants for default values?
-'''
+
 class Cacher:
     def __init__(
         self,
@@ -40,7 +32,7 @@ class Cacher:
         if self.keep_cache_in_memory:
             self.cache = self.load_cache()
 
-    def get(self, key: str, default = None) -> dict | list | None:
+    def get(self, key: str, default=None) -> dict | list | None:
         cache = self.load_cache()
 
         if key not in cache:
@@ -59,7 +51,11 @@ class Cacher:
         cache = self.load_cache()
 
         prepared_item = {
-            "expires": None if expires is None else int(datetime.datetime.now().timestamp()) + expires,
+            "expires": (
+                None
+                if expires is None
+                else int(datetime.datetime.now().timestamp()) + expires
+            ),
             "data": item,
         }
 
