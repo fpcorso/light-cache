@@ -42,7 +42,7 @@ def test_file_cache_persistence(temp_cache_dir):
     # First instance caches data
     cacher1 = CacheStore(
         persist_cache=True,
-        keep_cache_in_memory=False,
+        keep_cache_in_memory=True,
         store="test_cache",
         cache_directory=temp_cache_dir,
     )
@@ -51,7 +51,7 @@ def test_file_cache_persistence(temp_cache_dir):
     # The second instance should be able to read the cached data
     cacher2 = CacheStore(
         persist_cache=True,
-        keep_cache_in_memory=False,
+        keep_cache_in_memory=True,
         store="test_cache",
         cache_directory=temp_cache_dir,
     )

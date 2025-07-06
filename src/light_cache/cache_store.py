@@ -44,13 +44,14 @@ class CacheStore:
         if self.persist_cache:
             self._ensure_cache_directory_exists()
 
+        # If we are using object-caching, go ahead and load the cache in now to be used.
+        if self.keep_cache_in_memory:
+            self.cache = self.load_cache(load_from_memory=False)
+            logger.debug(f"Loaded {len(self.cache)} items into memory cache")
+
         # Remove all expired items from the existing cache, if any.
         self.remove_expired_items()
 
-        # If we are using object-caching, go ahead and load the cache in now to be used.
-        if self.keep_cache_in_memory:
-            self.cache = self.load_cache()
-            logger.debug(f"Loaded {len(self.cache)} items into memory cache")
 
     def get(self, key: str, default=None):
         """
@@ -167,14 +168,17 @@ class CacheStore:
             except Exception as e:
                 logger.error(f"Failed to write cache to file: {e}")
 
-    def load_cache(self) -> dict:
+    def load_cache(self, load_from_memory: bool = True) -> dict:
         """
         Load the cache from memory or disk based on configuration.
+
+        Args:
+            load_from_memory (bool): If keep_cache_in_memory is set to True, should we use the memory when loading cache this time.
 
         Returns:
             dict: The loaded cache data.
         """
-        if self.keep_cache_in_memory:
+        if self.keep_cache_in_memory and load_from_memory:
             return self.cache
 
         filename = self._get_cache_path()
