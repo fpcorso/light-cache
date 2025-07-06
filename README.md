@@ -80,6 +80,9 @@ my_value = cache.get('some-nonexistent-key', default=0)
 if cache.has('some-key'):
     # do something
 
+# `pull()` will retrieve a cached item and delete it from the cache if it exists
+my_value = cache.pull('some-key')
+
 # Expiration is in seconds (defaults to 5 minutes)
 cache.put('new-key', 'new-value', expires=1200)
 

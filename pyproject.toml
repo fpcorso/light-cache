@@ -1,6 +1,6 @@
 [project]
 name = "light-cache"
-version = "0.1.0"
+version = "0.2.0"
 description = "A simple, lightweight caching library for disk-based or object-based caching"
 keywords = [ "cache" ]
 authors = [
