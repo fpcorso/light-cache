@@ -147,6 +147,38 @@ class CacheStore:
             return True
         return False
 
+    def pull(self, key: str, default=None):
+        """
+        Retrieves an item from the cache and deletes it if it exists.
+
+        Args:
+            key (str): The key to look up in the cache.
+            default: Value to return if the key is not found or expired. Defaults to None.
+
+        Returns:
+            The cached item if found and not expired, otherwise the default value.
+        """
+        # We could have used get() and forget() here but both use load_cache. If not using memory, would
+        # have needed to load from the file twice so avoid using those helpers here for performance.
+        cache = self.load_cache()
+
+        if key not in cache:
+            logger.debug(f"Cache miss for key: {key}")
+            return default
+
+        item = cache[key].copy()
+        if self._is_expired(item):
+            logger.debug(f"Cache item expired for key: {key}")
+            del cache[key]
+            self.save_cache(cache)
+            return default
+
+        logger.debug(f"Cache hit for key: {key}")
+        value = item["data"]
+        del cache[key]
+        self.save_cache(cache)
+        return value
+
     def save_cache(self, data: dict) -> None:
         """
         Save the cache data to memory and/or disk based on configuration.
