@@ -52,7 +52,6 @@ class CacheStore:
         # Remove all expired items from the existing cache, if any.
         self.remove_expired_items()
 
-
     def get(self, key: str, default=None):
         """
         Retrieve an item from the cache.
