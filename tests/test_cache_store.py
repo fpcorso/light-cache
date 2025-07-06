@@ -211,6 +211,83 @@ def test_forget_nonexistent_item():
     assert result is False
 
 
+def test_pull_existing_item():
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+    test_data = {"key": "value"}
+
+    # Cache an item
+    cache.put("test_key", test_data)
+
+    # Pull the item
+    pulled_data = cache.pull("test_key")
+
+    # Verify pulled data matches original
+    assert pulled_data == test_data
+    # Verify the item was removed
+    assert cache.has("test_key") is False
+
+
+def test_pull_nonexistent_item():
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+
+    # Try to pull the non-existent item
+    default_value = {"default": "value"}
+    pulled_data = cache.pull("nonexistent", default=default_value)
+
+    # Verify default value is returned
+    assert pulled_data == default_value
+
+
+def test_pull_persistence(temp_cache_dir):
+    # Create the cache with both memory and file persistence
+    cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    test_data = {"key": "value"}
+    cache.put("test_key", test_data)
+
+    # Pull the item
+    pulled_data = cache.pull("test_key")
+
+    # Verify pulled data matches original
+    assert pulled_data == test_data
+
+    # Create new cache instance to verify item was removed from the file
+    new_cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    # Verify the item doesn't exist in the new instance
+    assert new_cache.has("test_key") is False
+
+
+def test_pull_without_memory_cache(temp_cache_dir):
+    cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+
+    test_data = {"key": "value"}
+    cache.put("test_key", test_data)
+
+    # Pull the item
+    pulled_data = cache.pull("test_key")
+
+    # Verify pulled data matches original
+    assert pulled_data == test_data
+    # Verify the item was removed
+    assert cache.has("test_key") is False
+
+
 def test_is_cache_directory_needed_with_valid_directory():
     cache = CacheStore(persist_cache=False, store="test", cache_directory="test_dir")
     assert cache._is_cache_directory_needed() is True
