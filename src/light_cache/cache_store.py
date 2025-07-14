@@ -234,6 +234,8 @@ class CacheStore:
         """Remove all expired items from the cache."""
         cache = self.load_cache()
 
+        original_size = len(cache)
+
         expired = [k for k, v in cache.items() if self._is_expired(v)]
         for key in expired:
             del cache[key]
