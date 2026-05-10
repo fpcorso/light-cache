@@ -178,6 +178,13 @@ class CacheStore:
         self.save_cache(cache)
         return value
 
+    def clear(self) -> None:
+        """Remove all items from the cache store."""
+        cache = self.load_cache()
+        item_count = len(cache)
+        self.save_cache({})
+        logger.info(f"Cleared {item_count} items from cache store '{self.store}'")
+
     def save_cache(self, data: dict) -> None:
         """
         Save the cache data to memory and/or disk based on configuration.
