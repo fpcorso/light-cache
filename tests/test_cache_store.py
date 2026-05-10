@@ -1,6 +1,6 @@
-from datetime import datetime
 import os
 import shutil
+from datetime import datetime
 
 import pytest
 
@@ -286,6 +286,115 @@ def test_pull_without_memory_cache(temp_cache_dir):
     assert pulled_data == test_data
     # Verify the item was removed
     assert cache.has("test_key") is False
+
+
+def test_clear_removes_all_items():
+    """Test that clear() removes all items from a memory cache."""
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+    cache.put("key1", "value1")
+    cache.put("key2", "value2")
+    cache.put("key3", "value3")
+
+    cache.clear()
+
+    assert cache.has("key1") is False
+    assert cache.has("key2") is False
+    assert cache.has("key3") is False
+
+
+def test_clear_returns_none():
+    """Test that clear() returns None, matching Python built-in clear() conventions."""
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+    cache.put("key1", "value1")
+
+    result = cache.clear()
+
+    assert result is None
+
+
+def test_clear_on_empty_cache():
+    """Test that clear() on an already empty cache does not raise."""
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+
+    cache.clear()
+
+    assert cache.load_cache() == {}
+
+
+def test_clear_allows_new_items_after():
+    """Test that the cache is still usable after clear()."""
+    cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
+    cache.put("key1", "value1")
+
+    cache.clear()
+    cache.put("key2", "value2")
+
+    assert cache.get("key1") is None
+    assert cache.get("key2") == "value2"
+
+
+def test_clear_persists_to_disk(temp_cache_dir):
+    """Test that clear() removes all items from disk so a new instance starts empty."""
+    cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+    cache.put("key1", "value1")
+    cache.put("key2", "value2")
+
+    cache.clear()
+
+    new_cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+    assert new_cache.get("key1") is None
+    assert new_cache.get("key2") is None
+    assert new_cache.load_cache() == {}
+
+
+def test_clear_disk_only_mode(temp_cache_dir):
+    """Test that clear() works correctly in disk-only mode."""
+    cache = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=False,
+        store="test_cache",
+        cache_directory=temp_cache_dir,
+    )
+    cache.put("key1", "value1")
+    cache.put("key2", "value2")
+
+    cache.clear()
+
+    assert cache.has("key1") is False
+    assert cache.has("key2") is False
+
+
+def test_clear_does_not_affect_other_stores(temp_cache_dir):
+    """Test that clear() only removes items from its own store."""
+    cache_a = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="store_a",
+        cache_directory=temp_cache_dir,
+    )
+    cache_b = CacheStore(
+        persist_cache=True,
+        keep_cache_in_memory=True,
+        store="store_b",
+        cache_directory=temp_cache_dir,
+    )
+    cache_a.put("key1", "value1")
+    cache_b.put("key2", "value2")
+
+    cache_a.clear()
+
+    assert cache_a.has("key1") is False
+    assert cache_b.has("key2") is True
 
 
 def test_is_cache_directory_needed_with_valid_directory():

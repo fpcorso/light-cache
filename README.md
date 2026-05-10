@@ -64,7 +64,7 @@ podcast_cache = CacheStore(store='podcasts')
 
 ### Setting and retrieving values
 
-The main methods are `get()`, `put()`, `has()`, and `forget()`.
+The main methods are `get()`, `put()`, `has()`, `forget()`, and `clear()`.
 
 ```python
 from light_cache import CacheStore
@@ -91,6 +91,9 @@ cache.put('never-expire-key', 'never-expire-value', expires=None)
 
 # Items that do not expire will remain in cache until the item is removed using `forget()`
 cache.forget('never-expire-key')
+
+# `clear()` removes all items from the store at once
+cache.clear()
 ```
 
 ### Change location of the cache directory
@@ -123,12 +126,18 @@ To run tests locally, use:
 poetry run pytest
 ```
 
-#### Formatter
+#### Formatter and linter
 
-This project uses [black](https://black.readthedocs.io/en/stable/index.html) for formatting. To run the formatter, use:
+This project uses [ruff](https://docs.astral.sh/ruff/) for formatting and linting. To run the formatter, use:
 
 ```shell
-poetry run black .
+poetry run ruff format .
+```
+
+To run the linter, use:
+
+```shell
+poetry run ruff check .
 ```
 
 ## License

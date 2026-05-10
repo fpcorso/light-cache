@@ -9,15 +9,18 @@ logger = logging.getLogger(__name__)
 
 class CacheStore:
     """
-    A flexible caching system that supports both in-memory and persistent file-based caching.
+    A flexible caching system that supports both in-memory and persistent
+    file-based caching.
 
     This class provides functionality to cache data with optional expiration times,
     persistence to disk, and memory-only operations. It handles JSON serialization
-    of cached data and provides methods for storing, retrieving, and managing cached items.
+    of cached data and provides methods for storing, retrieving, and managing
+    cached items.
 
     Args:
         persist_cache (bool): Whether to save cache to disk. Defaults to True.
-        keep_cache_in_memory (bool): Whether to maintain an in-memory cache. Defaults to True.
+        keep_cache_in_memory (bool): Whether to maintain an in-memory cache.
+            Defaults to True.
         store (str): Name of the cache store/file. Defaults to "general_cache".
         cache_directory (str): Directory to store cache files. Defaults to ".cache".
     """
@@ -87,7 +90,7 @@ class CacheStore:
             key (str): The key under which to store the item.
             item (Any): The data to cache.
             expires (int | None): Time in seconds until the item expires.
-                                None means the item never expires. Defaults to 600 seconds.
+                None means the item never expires. Defaults to 600 seconds.
         """
         cache = self.load_cache()
 
@@ -152,13 +155,14 @@ class CacheStore:
 
         Args:
             key (str): The key to look up in the cache.
-            default: Value to return if the key is not found or expired. Defaults to None.
+            default: Value to return if the key is not found or expired.
+                Defaults to None.
 
         Returns:
             The cached item if found and not expired, otherwise the default value.
         """
-        # We could have used get() and forget() here but both use load_cache. If not using memory, would
-        # have needed to load from the file twice so avoid using those helpers here for performance.
+        # Avoids calling get() + forget() since both invoke load_cache().
+        # In disk-only mode that would read the file twice; one pass is faster.
         cache = self.load_cache()
 
         if key not in cache:
@@ -177,6 +181,13 @@ class CacheStore:
         del cache[key]
         self.save_cache(cache)
         return value
+
+    def clear(self) -> None:
+        """Remove all items from the cache store."""
+        cache = self.load_cache()
+        item_count = len(cache)
+        self.save_cache({})
+        logger.info(f"Cleared {item_count} items from cache store '{self.store}'")
 
     def save_cache(self, data: dict) -> None:
         """
@@ -204,7 +215,8 @@ class CacheStore:
         Load the cache from memory or disk based on configuration.
 
         Args:
-            load_from_memory (bool): If keep_cache_in_memory is set to True, should we use the memory when loading cache this time.
+            load_from_memory (bool): When keep_cache_in_memory is True, controls
+                whether to read from the in-memory cache or fall back to disk.
 
         Returns:
             dict: The loaded cache data.
@@ -214,7 +226,7 @@ class CacheStore:
 
         filename = self._get_cache_path()
         try:
-            with open(filename, "r") as cache_file:
+            with open(filename) as cache_file:
                 cached_data = cache_file.read()
                 data = JSONSerializer().decode(cached_data)
             logger.debug(f"Loaded {len(data)} items from cache file: {filename}")
@@ -270,7 +282,7 @@ class CacheStore:
 
     @staticmethod
     def _sanitize_store(store: str) -> str:
-        """Sanitize the store by removing path traversal components and invalid chars."""
+        """Sanitize the store name, removing path traversal and invalid chars."""
         # Remove any directory traversal attempt
         base_store = os.path.basename(store)
 
@@ -285,7 +297,7 @@ class CacheStore:
 
     @staticmethod
     def _sanitize_directory(directory: str) -> str:
-        """Sanitize the directory path by resolving to the absolute path and checking traversal."""
+        """Sanitize directory path: resolve symlinks and block traversal outside CWD."""
         if not directory or directory == ".":
             return "."
 
@@ -297,7 +309,7 @@ class CacheStore:
         cwd = os.path.realpath(os.getcwd())
         if not real_path.startswith(cwd):
             logger.warning(
-                f"Attempted directory traversal outside CWD. Defaulting to '.cache'"
+                "Attempted directory traversal outside CWD. Defaulting to '.cache'"
             )
             return ".cache"
 
