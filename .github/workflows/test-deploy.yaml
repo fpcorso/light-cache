@@ -1,0 +1,23 @@
+name: Deploy Test Release
+on:
+  push:
+    branches:
+      - 'release/**'
+jobs:
+  test-deploy:
+    runs-on: ubuntu-latest
+    environment: Staging
+    env:
+      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME_TESTPYPI }}
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD_TESTPYPI }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: python -m pip install --upgrade build twine
+      - name: Build version
+        run: python -m build
+      - name: Deploy to TestPypi
+        run: python -m twine upload --repository testpypi dist/*
