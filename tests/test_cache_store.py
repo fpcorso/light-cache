@@ -1,6 +1,6 @@
-from datetime import datetime
 import os
 import shutil
+from datetime import datetime
 
 import pytest
 
@@ -303,7 +303,7 @@ def test_clear_removes_all_items():
 
 
 def test_clear_returns_none():
-    """Test that clear() returns None, consistent with Python built-in clear() methods."""
+    """Test that clear() returns None, matching Python built-in clear() conventions."""
     cache = CacheStore(persist_cache=False, keep_cache_in_memory=True)
     cache.put("key1", "value1")
 
@@ -334,7 +334,7 @@ def test_clear_allows_new_items_after():
 
 
 def test_clear_persists_to_disk(temp_cache_dir):
-    """Test that clear() removes items from disk so a new instance sees an empty cache."""
+    """Test that clear() removes all items from disk so a new instance starts empty."""
     cache = CacheStore(
         persist_cache=True,
         keep_cache_in_memory=True,
