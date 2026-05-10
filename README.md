@@ -64,7 +64,7 @@ podcast_cache = CacheStore(store='podcasts')
 
 ### Setting and retrieving values
 
-The main methods are `get()`, `put()`, `has()`, and `forget()`.
+The main methods are `get()`, `put()`, `has()`, `forget()`, and `clear()`.
 
 ```python
 from light_cache import CacheStore
@@ -91,6 +91,9 @@ cache.put('never-expire-key', 'never-expire-value', expires=None)
 
 # Items that do not expire will remain in cache until the item is removed using `forget()`
 cache.forget('never-expire-key')
+
+# `clear()` removes all items from the store at once
+cache.clear()
 ```
 
 ### Change location of the cache directory
